@@ -1,185 +1,193 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { jobInfos } from "@/drizzle/schema"
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { experienceLevels } from "@/drizzle/schema"
 import { jobInfoSchema } from "@/features/jobInfos/zod-schema"
+import { formatExperienceLevel } from "@/features/jobInfos/lib/formatters"
+import { LoadingSwap } from "@/components/ui/loading-swap"
+import { createJobInfo, updateJobInfo } from "@/features/jobInfos/actions"
+import { toast } from "sonner"
 
-type JobInfoFormValues = z.infer<typeof jobInfoSchema>
+const jobInfoFormSchema = jobInfoSchema.extend({
+    name: z
+        .string()
+        .transform((s) => s.trim())
+        .refine((s) => s.length > 0, "Required"),
+    description: z
+        .string()
+        .transform((s) => s.trim())
+        .refine((s) => s.length > 0, "Required"),
+    title: z
+        .string()
+        .nullable()
+        .transform((v) => {
+            if (v == null) return null
+            const trimmed = v.trim()
+            return trimmed === "" ? null : trimmed
+        }),
+})
 
-export default function JobInfoForm() {
-    const [values, setValues] = useState<JobInfoFormValues>(() => ({
-        name: "",
-        title: null,
-        description: "",
-        experienceLevel: "junior",
-    }))
+type JobInfoFormValues = z.infer<typeof jobInfoFormSchema>
 
-    const [errors, setErrors] = useState<
-        Partial<Record<keyof JobInfoFormValues, string>>
-    >({})
+export default function JobInfoForm({
+    jobInfo,
+}: {
+    jobInfo?: Pick<
+        typeof jobInfos.$inferSelect,
+        "id" | "name" | "title" | "description" | "experienceLevel"
+    >
+}) {
+    const form = useForm<JobInfoFormValues>({
+        resolver: zodResolver(jobInfoFormSchema),
+        defaultValues: jobInfo ?? {
+            name: "",
+            title: null,
+            description: "",
+            experienceLevel: "junior",
+        },
+    })
 
-    const experienceLevelOptions = useMemo(() => experienceLevels, [])
-
-    function handleChange<K extends keyof JobInfoFormValues>(
-        key: K,
-        value: JobInfoFormValues[K]
-    ) {
-        setValues((prev) => ({ ...prev, [key]: value }))
-        setErrors((prev) => ({ ...prev, [key]: undefined }))
-    }
-
-    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault()
-
-        const parsed = jobInfoSchema.safeParse({
-            ...values,
-            title:
-                (values.title ?? "").trim() === ""
-                    ? undefined
-                    : values.title?.trim(),
-            name: values.name.trim(),
-            description: values.description.trim(),
-        })
-
-        if (!parsed.success) {
-            const fieldErrors: Partial<
-                Record<keyof JobInfoFormValues, string>
-            > = {}
-            for (const issue of parsed.error.issues) {
-                const path = issue.path[0] as keyof JobInfoFormValues
-                if (path != null && fieldErrors[path] == null)
-                    fieldErrors[path] = issue.message
-            }
-            setErrors(fieldErrors)
-            return
-        }
-
+    async function onSubmit(values: JobInfoFormValues) {
         // No action/db code per instructions; keep parsed data available for parent wiring
         // eslint-disable-next-line no-console
-        console.log("JobInfoForm submit:", parsed.data)
+        const action = jobInfo
+            ? updateJobInfo.bind(null, jobInfo.id)
+            : createJobInfo
+        // console.log("JobInfoForm submit:",  values)
+        const res = await action(values)
+        if (res.error) {
+            toast.error(res.message)
+        }
     }
 
     return (
-        <form onSubmit={onSubmit} className="space-y-6 py-6">
-            <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                    Name
-                </label>
-                <input
-                    id="name"
-                    value={values.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="e.g. Frontend Engineer role"
-                    aria-invalid={Boolean(errors.name) || undefined}
-                    aria-describedby={errors.name ? "name-error" : undefined}
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6 py-6"
+            >
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="e.g. Frontend Engineer role"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
-                {errors.name ? (
-                    <p id="name-error" className="text-sm text-red-600">
-                        {errors.name}
-                    </p>
-                ) : null}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-medium">
-                        Job Title (optional)
-                    </label>
-                    <input
-                        id="title"
-                        value={values.title ?? ""}
-                        onChange={(e) => handleChange("title", e.target.value)}
-                        className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="e.g. Senior React Developer"
-                        aria-invalid={Boolean(errors.title) || undefined}
-                        aria-describedby={
-                            errors.title ? "title-error" : undefined
-                        }
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Job Title</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="e.g. Senior React Developer"
+                                        value={field.value ?? ""}
+                                        onChange={(e) =>
+                                            field.onChange(
+                                                e.target.value || null
+                                            )
+                                        }
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    {errors.title ? (
-                        <p id="title-error" className="text-sm text-red-600">
-                            {errors.title}
-                        </p>
-                    ) : null}
+
+                    <FormField
+                        control={form.control}
+                        name="experienceLevel"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Experience Level</FormLabel>
+                                <FormControl>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {experienceLevels.map((lvl) => (
+                                                <SelectItem
+                                                    key={lvl}
+                                                    value={lvl}
+                                                    className="capitalize"
+                                                >
+                                                    {formatExperienceLevel(lvl)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </div>
 
-                <div className="space-y-2">
-                    <label
-                        htmlFor="experienceLevel"
-                        className="text-sm font-medium"
-                    >
-                        Experience Level
-                    </label>
-                    <select
-                        id="experienceLevel"
-                        value={values.experienceLevel}
-                        onChange={(e) =>
-                            handleChange(
-                                "experienceLevel",
-                                e.target.value as typeof values.experienceLevel
-                            )
-                        }
-                        className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        aria-invalid={
-                            Boolean(errors.experienceLevel) || undefined
-                        }
-                        aria-describedby={
-                            errors.experienceLevel
-                                ? "experienceLevel-error"
-                                : undefined
-                        }
-                    >
-                        {experienceLevelOptions.map((lvl) => (
-                            <option
-                                key={lvl}
-                                value={lvl}
-                                className="capitalize"
-                            >
-                                {lvl}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.experienceLevel ? (
-                        <p
-                            id="experienceLevel-error"
-                            className="text-sm text-red-600"
-                        >
-                            {errors.experienceLevel}
-                        </p>
-                    ) : null}
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">
-                    Description
-                </label>
-                <textarea
-                    id="description"
-                    value={values.description}
-                    onChange={(e) =>
-                        handleChange("description", e.target.value)
-                    }
-                    className="block min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Paste the job description or summarize what you're targeting"
-                    aria-invalid={Boolean(errors.description) || undefined}
-                    aria-describedby={
-                        errors.description ? "description-error" : undefined
-                    }
+                <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    placeholder="Paste the job description or summarize what you're targeting"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
-                {errors.description ? (
-                    <p id="description-error" className="text-sm text-red-600">
-                        {errors.description}
-                    </p>
-                ) : null}
-            </div>
 
-            <div className="flex justify-end">
-                <Button type="submit">Save</Button>
-            </div>
-        </form>
+                <div className="flex justify-end">
+                    <Button
+                        disabled={form.formState.isSubmitting}
+                        type="submit"
+                    >
+                        <LoadingSwap isLoading={form.formState.isSubmitting}>
+                            Save Job Information
+                        </LoadingSwap>
+                    </Button>
+                </div>
+            </form>
+        </Form>
     )
 }

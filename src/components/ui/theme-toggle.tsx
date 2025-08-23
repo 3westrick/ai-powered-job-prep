@@ -58,7 +58,7 @@ export function ThemeToggle() {
                         key={value}
                         onClick={() => setTheme(value)}
                         className={cn(
-                            "flex items-center gap-2 cursor-pointer focus:bg-primary focus:text-primary-foreground",
+                            "flex items-center gap-2",
                             value === theme &&
                                 "bg-accent text-accent-foreground"
                         )}
