@@ -1,4 +1,6 @@
 import BackLink from "@/components/back-link"
+import { Skeleton } from "@/components/skleton"
+import SuspendedItem from "@/components/suspended-item"
 import { Badge } from "@/components/ui/badge"
 import {
     Card,
@@ -49,12 +51,22 @@ export default async function JobInfoPage({
     params: Promise<{ jobInfoId: string }>
 }) {
     const { jobInfoId } = await params
-    const { userId, redirectToSignIn } = await getCurrentUser()
 
-    if (!userId) return redirectToSignIn()
+    const jobInfoPromise = getCurrentUser().then(
+        async ({ userId, redirectToSignIn }) => {
+            if (!userId) return redirectToSignIn()
+            const jobInfo = await getJobInfo(jobInfoId, userId)
+            if (!jobInfo) return notFound()
+            return jobInfo
+        }
+    )
 
-    const jobInfo = await getJobInfo(jobInfoId, userId)
-    if (!jobInfo) return notFound()
+    // const { userId, redirectToSignIn } = await getCurrentUser()
+
+    // if (!userId) return redirectToSignIn()
+
+    // const jobInfo = getJobInfo(jobInfoId, userId)
+    // if (!jobInfo) return notFound()
 
     return (
         <div className="container my-4 space-y-4">
@@ -63,20 +75,46 @@ export default async function JobInfoPage({
             <div className="space-y-6">
                 <header className="space-y-4">
                     <div className="space-y-2">
-                        <h1 className="text-3xl md:text-4xl">{jobInfo.name}</h1>
+                        <h1 className="text-3xl md:text-4xl">
+                            <SuspendedItem
+                                item={jobInfoPromise}
+                                fallback={<Skeleton className="w-48" />}
+                                result={(j) => j.name}
+                            />
+                        </h1>
                         <div className="flex gap-2">
-                            <Badge variant="secondary">
-                                {formatExperienceLevel(jobInfo.experienceLevel)}
-                            </Badge>
-                            {jobInfo.title && (
-                                <Badge variant="secondary">
-                                    {jobInfo.title}
-                                </Badge>
-                            )}
+                            <SuspendedItem
+                                item={jobInfoPromise}
+                                fallback={<Skeleton className="w-12" />}
+                                result={(j) => (
+                                    <Badge variant="secondary">
+                                        {formatExperienceLevel(
+                                            j.experienceLevel
+                                        )}
+                                    </Badge>
+                                )}
+                            />
+                            <SuspendedItem
+                                item={jobInfoPromise}
+                                fallback={null}
+                                result={(j) => {
+                                    return (
+                                        j.title && (
+                                            <Badge variant="secondary">
+                                                {j.title}
+                                            </Badge>
+                                        )
+                                    )
+                                }}
+                            />
                         </div>
                     </div>
                     <p className="text-muted-foreground line-clamp-3">
-                        {jobInfo.description}
+                        <SuspendedItem
+                            item={jobInfoPromise}
+                            fallback={<Skeleton className="w-96" />}
+                            result={(j) => j.description}
+                        />
                     </p>
                 </header>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 has-hover:*:not-hover:opacity-70">
