@@ -5,7 +5,7 @@ import db from "@/drizzle/db"
 import { z } from "zod"
 import { jobInfoSchema } from "./zod-schema"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { insertJobInfo, updateJobInfo as updateJobInfoDb } from "./db"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import { getJobInfoIdTag } from "./dbCache"
@@ -66,11 +66,23 @@ export async function updateJobInfo(
     redirect(`/app/job-infos/${jobInfo.id}`)
 }
 
-async function getJobInfo(id: string, userId: string) {
+export async function getJobInfo(jobInfoId: string, userId: string) {
     "use cache"
-    cacheTag(getJobInfoIdTag(id))
+    cacheTag(getJobInfoIdTag(jobInfoId))
+    try {
+        return await db.query.jobInfos.findFirst({
+            where: and(eq(jobInfos.id, jobInfoId), eq(jobInfos.userId, userId)),
+        })
+    } catch (e) {
+        return null
+    }
+}
 
-    return db.query.jobInfos.findFirst({
-        where: and(eq(jobInfos.id, id), eq(jobInfos.userId, userId)),
+export async function getJobInfoWithUser(id: string) {
+    return getCurrentUser().then(async ({ userId, redirectToSignIn }) => {
+        if (!userId) return redirectToSignIn()
+        const jobInfo = await getJobInfo(id, userId)
+        if (!jobInfo) return notFound()
+        return jobInfo
     })
 }

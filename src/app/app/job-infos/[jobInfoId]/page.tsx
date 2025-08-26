@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import db from "@/drizzle/db"
 import { jobInfos } from "@/drizzle/schema"
+import { getJobInfoWithUser } from "@/features/jobInfos/actions"
 import { getJobInfoIdTag } from "@/features/jobInfos/dbCache"
 import { formatExperienceLevel } from "@/features/jobInfos/lib/formatters"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
@@ -52,21 +53,7 @@ export default async function JobInfoPage({
 }) {
     const { jobInfoId } = await params
 
-    const jobInfoPromise = getCurrentUser().then(
-        async ({ userId, redirectToSignIn }) => {
-            if (!userId) return redirectToSignIn()
-            const jobInfo = await getJobInfo(jobInfoId, userId)
-            if (!jobInfo) return notFound()
-            return jobInfo
-        }
-    )
-
-    // const { userId, redirectToSignIn } = await getCurrentUser()
-
-    // if (!userId) return redirectToSignIn()
-
-    // const jobInfo = getJobInfo(jobInfoId, userId)
-    // if (!jobInfo) return notFound()
+    const jobInfoPromise = getJobInfoWithUser(jobInfoId)
 
     return (
         <div className="container my-4 space-y-4">
@@ -141,13 +128,4 @@ export default async function JobInfoPage({
             </div>
         </div>
     )
-}
-
-async function getJobInfo(jobInfoId: string, userId: string) {
-    "use cache"
-    getJobInfoIdTag(jobInfoId)
-
-    return await db.query.jobInfos.findFirst({
-        where: and(eq(jobInfos.id, jobInfoId), eq(jobInfos.userId, userId)),
-    })
 }
