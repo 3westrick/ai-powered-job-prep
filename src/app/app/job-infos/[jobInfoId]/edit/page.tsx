@@ -1,4 +1,3 @@
-import BackLink from "@/components/back-link"
 import JobInfoForm from "@/components/job-info-form"
 import JobInfoBackLink from "@/components/jobinfo-back-link"
 import { Card, CardContent } from "@/components/ui/card"
