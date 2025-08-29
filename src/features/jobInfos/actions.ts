@@ -78,11 +78,13 @@ export async function getJobInfo(jobInfoId: string, userId: string) {
     }
 }
 
-export async function getJobInfoWithUser(id: string) {
-    return getCurrentUser().then(async ({ userId, redirectToSignIn }) => {
-        if (!userId) return redirectToSignIn()
-        const jobInfo = await getJobInfo(id, userId)
-        if (!jobInfo) return notFound()
-        return jobInfo
-    })
+export async function getJobInfoWithUser(id: string, allData = false) {
+    return getCurrentUser({ allData }).then(
+        async ({ userId, redirectToSignIn, user }) => {
+            if (!userId || (allData && !user)) return redirectToSignIn()
+            const jobInfo = await getJobInfo(id, userId)
+            if (!jobInfo) return notFound()
+            return { jobInfo, userId, redirectToSignIn, user }
+        }
+    )
 }

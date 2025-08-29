@@ -1,8 +1,9 @@
 import db from "@/drizzle/db"
 import { users } from "@/drizzle/schema"
 import { eq } from "drizzle-orm"
+import { UserInsert } from "./lib/types"
 
-export async function upsertUser(user: typeof users.$inferInsert) {
+export async function upsertUser(user: UserInsert) {
     await db
         .insert(users)
         .values(user)

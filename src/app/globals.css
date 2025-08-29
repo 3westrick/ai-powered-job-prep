@@ -221,3 +221,7 @@
         @apply absolute top-0 left-1/2 -translate-1/2 rounded-full px-4 py-1 text-sm text-primary-foreground bg-primary;
     }
 }
+
+.center {
+    @apply flex items-center justify-center;
+}

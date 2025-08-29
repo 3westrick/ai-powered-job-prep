@@ -1,11 +1,12 @@
 import { ComponentProps } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserComponent } from "@/features/users/lib/types"
 
 export function UserAvatar({
     user,
     ...props
 }: {
-    user: { name: string; imageUrl: string }
+    user: UserComponent
 } & ComponentProps<typeof Avatar>) {
     return (
         <Avatar {...props}>

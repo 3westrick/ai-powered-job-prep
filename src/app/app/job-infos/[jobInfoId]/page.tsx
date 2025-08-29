@@ -9,16 +9,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import db from "@/drizzle/db"
-import { jobInfos } from "@/drizzle/schema"
 import { getJobInfoWithUser } from "@/features/jobInfos/actions"
-import { getJobInfoIdTag } from "@/features/jobInfos/dbCache"
 import { formatExperienceLevel } from "@/features/jobInfos/lib/formatters"
-import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
-import { and, eq } from "drizzle-orm"
 import { ArrowRightIcon } from "lucide-react"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
 
 const options = [
     {
@@ -66,7 +60,7 @@ export default async function JobInfoPage({
                             <SuspendedItem
                                 item={jobInfoPromise}
                                 fallback={<Skeleton className="w-48" />}
-                                result={(j) => j.name}
+                                result={(j) => j.jobInfo.name}
                             />
                         </h1>
                         <div className="flex gap-2">
@@ -76,7 +70,7 @@ export default async function JobInfoPage({
                                 result={(j) => (
                                     <Badge variant="secondary">
                                         {formatExperienceLevel(
-                                            j.experienceLevel
+                                            j.jobInfo.experienceLevel
                                         )}
                                     </Badge>
                                 )}
@@ -86,9 +80,9 @@ export default async function JobInfoPage({
                                 fallback={null}
                                 result={(j) => {
                                     return (
-                                        j.title && (
+                                        j.jobInfo.title && (
                                             <Badge variant="secondary">
-                                                {j.title}
+                                                {j.jobInfo.title}
                                             </Badge>
                                         )
                                     )
@@ -100,7 +94,7 @@ export default async function JobInfoPage({
                         <SuspendedItem
                             item={jobInfoPromise}
                             fallback={<Skeleton className="w-96" />}
-                            result={(j) => j.description}
+                            result={(j) => j.jobInfo.description}
                         />
                     </p>
                 </header>

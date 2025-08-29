@@ -35,5 +35,5 @@ export default async function JobInfoNewPage({
 
 async function SuspendedForm({ jobInfoId }: { jobInfoId: string }) {
     const jobInfo = await getJobInfoWithUser(jobInfoId)
-    return <JobInfoForm jobInfo={jobInfo} />
+    return <JobInfoForm jobInfo={jobInfo.jobInfo} />
 }

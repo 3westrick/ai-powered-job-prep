@@ -28,6 +28,7 @@ import { formatExperienceLevel } from "@/features/jobInfos/lib/formatters"
 import { LoadingSwap } from "@/components/ui/loading-swap"
 import { createJobInfo, updateJobInfo } from "@/features/jobInfos/actions"
 import { toast } from "sonner"
+import { JobInfo } from "@/features/jobInfos/lib/types"
 
 const jobInfoFormSchema = jobInfoSchema.extend({
     name: z
@@ -54,7 +55,7 @@ export default function JobInfoForm({
     jobInfo,
 }: {
     jobInfo?: Pick<
-        typeof jobInfos.$inferSelect,
+        JobInfo,
         "id" | "name" | "title" | "description" | "experienceLevel"
     >
 }) {

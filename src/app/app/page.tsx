@@ -23,7 +23,7 @@ export default function AppPage() {
     return (
         <Suspense
             fallback={
-                <div className="h-screen-header flex items-center justify-center">
+                <div className="h-screen-header center">
                     <Loader2Icon className="size-24 animate-spin" />
                 </div>
             }

@@ -2,8 +2,9 @@ import db from "@/drizzle/db"
 import { jobInfos } from "@/drizzle/schema"
 import { revalidateJobInfoCache } from "./dbCache"
 import { eq } from "drizzle-orm"
+import { JobInfoInsert } from "./lib/types"
 
-export async function insertJobInfo(jobInfo: typeof jobInfos.$inferInsert) {
+export async function insertJobInfo(jobInfo: JobInfoInsert) {
     const [newJobInfo] = await db.insert(jobInfos).values(jobInfo).returning({
         id: jobInfos.id,
         userId: jobInfos.userId,
@@ -16,7 +17,7 @@ export async function insertJobInfo(jobInfo: typeof jobInfos.$inferInsert) {
 
 export async function updateJobInfo(
     id: string,
-    jobInfo: Partial<typeof jobInfos.$inferInsert>
+    jobInfo: Partial<JobInfoInsert>
 ) {
     const [updatedJobInfo] = await db
         .update(jobInfos)

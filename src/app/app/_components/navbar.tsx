@@ -21,6 +21,7 @@ import { useParams, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { UserAvatar } from "@/app/app/_components/user-avatar"
+import { UserComponent } from "@/features/users/lib/types"
 
 const navLinks = [
     { name: "Interviews", href: "interviews", Icon: SpeechIcon },
@@ -28,11 +29,7 @@ const navLinks = [
     { name: "Resume", href: "resume", Icon: FileSlidersIcon },
 ]
 
-export default function Navbar({
-    user,
-}: {
-    user: { name: string; imageUrl: string }
-}) {
+export default function Navbar({ user }: { user: UserComponent }) {
     const { openUserProfile } = useClerk()
     const { jobInfoId } = useParams()
     const pathName = usePathname()
