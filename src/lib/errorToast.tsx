@@ -2,15 +2,15 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-const PLAN_LIMIT = "PLAN_LIMIT"
-const RATE_LIMIT = "RATE_LIMIT"
+export const PLAN_LIMIT = "PLAN_LIMIT"
+export const RATE_LIMIT = "RATE_LIMIT"
 
 export default function errorToast(message: string) {
     if (message === PLAN_LIMIT) {
         const toastId = toast.error("You have reached your plan limit", {
             action: (
                 <Button onClick={() => toast.dismiss(toastId)}>
-                    <Link href="/app/billing">Upgrade</Link>
+                    <Link href="/app/upgrade">Upgrade</Link>
                 </Button>
             ),
         })

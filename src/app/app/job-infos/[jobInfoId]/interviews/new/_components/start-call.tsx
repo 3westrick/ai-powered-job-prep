@@ -9,7 +9,7 @@ import { condenseChatMessages } from "@/services/hume/lib/condenseChatMessages"
 import { useEffect, useMemo, useRef, useState } from "react"
 import CondensedMessages from "@/services/hume/components/condensed-messages"
 import { createInterview, updateInterview } from "@/features/interviews/actions"
-import errorToast from "@/lib/erroToast"
+import errorToast from "@/lib/errorToast"
 import { useRouter } from "next/navigation"
 
 export function StartCall({

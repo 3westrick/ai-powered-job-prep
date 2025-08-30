@@ -14,6 +14,7 @@ import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import { notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 import { StartCall } from "./_components/start-call"
+import { canCreateInterview } from "@/features/interviews/permissions"
 
 export default async function InterviewsPage({
     params,
@@ -39,6 +40,9 @@ async function SuspendedComponent({ jobInfoId }: { jobInfoId: string }) {
     if (!jobInfoId) return notFound()
     const { jobInfo, user } = await getJobInfoWithUser(jobInfoId, true)
     if (!user) return notFound()
+    if (!(await canCreateInterview())) {
+        return redirect("/app/upgrade")
+    }
     const accessToken = await getHumeAccessToken()
     return (
         <VoiceProvider>
@@ -48,30 +52,5 @@ async function SuspendedComponent({ jobInfoId }: { jobInfoId: string }) {
                 accessToken={accessToken}
             />
         </VoiceProvider>
-    )
-}
-
-async function getInterviews(jobInfoId: string, userId: string) {
-    "use cache"
-    cacheTag(getInterviewJobInfoTag(jobInfoId))
-    cacheTag(getJobInfoIdTag(jobInfoId))
-
-    const jobInterviews = await db.query.interviews.findMany({
-        where: and(
-            eq(interviews.jobInfoId, jobInfoId),
-            isNotNull(interviews.humeChatId)
-        ),
-        orderBy: [desc(interviews.createdAt)],
-        with: {
-            jobInfo: {
-                columns: {
-                    userId: true,
-                },
-            },
-        },
-    })
-
-    return jobInterviews.filter(
-        (interview) => interview.jobInfo.userId === userId
     )
 }
