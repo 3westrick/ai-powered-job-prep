@@ -5,8 +5,9 @@ import { JobInfo } from "@/features/jobInfos/lib/types"
 import { UserComponent } from "@/features/users/lib/types"
 import { useVoice, VoiceReadyState } from "@humeai/voice-react"
 import { Loader2Icon, MicIcon, MicOffIcon, PhoneOffIcon } from "lucide-react"
-// import { condenseChatMessages } from "@/services/hume/lib/condenseChatMessages"
+import { condenseChatMessages } from "@/services/hume/lib/condenseChatMessages"
 import { useMemo } from "react"
+import CondensedMessages from "@/services/hume/components/condensed-messages"
 
 export function StartCall({
     jobInfo,
@@ -71,11 +72,17 @@ export function StartCall({
 }
 
 function Messages({ user }: { user: UserComponent }) {
-    // const { messages, fft, micFft } = useVoice()
-    // const condensedMessages = useMemo(() => {
-    //     return condenseChatMessages(messages)
-    // }, [messages])
-    return null
+    const { messages, fft } = useVoice()
+    const condensedMessages = useMemo(() => {
+        return condenseChatMessages(messages)
+    }, [messages])
+    return (
+        <CondensedMessages
+            messages={condensedMessages}
+            user={user}
+            maxFft={Math.max(...fft)}
+        />
+    )
 }
 
 function Controls() {
