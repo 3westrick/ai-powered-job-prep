@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card"
 import db from "@/drizzle/db"
 import { interviews } from "@/drizzle/schema"
+import { getInterviews } from "@/features/interviews/actions"
 import { getInterviewJobInfoTag } from "@/features/interviews/dbCache"
 import { getJobInfoWithUser } from "@/features/jobInfos/actions"
 import { getJobInfoIdTag } from "@/features/jobInfos/dbCache"
@@ -105,30 +106,5 @@ async function SuspendedPage({ jobInfoId }: { jobInfoId: string }) {
                 ))}
             </div>
         </div>
-    )
-}
-
-async function getInterviews(jobInfoId: string, userId: string) {
-    "use cache"
-    cacheTag(getInterviewJobInfoTag(jobInfoId))
-    cacheTag(getJobInfoIdTag(jobInfoId))
-
-    const jobInterviews = await db.query.interviews.findMany({
-        where: and(
-            eq(interviews.jobInfoId, jobInfoId),
-            isNotNull(interviews.humeChatId)
-        ),
-        orderBy: [desc(interviews.createdAt)],
-        with: {
-            jobInfo: {
-                columns: {
-                    userId: true,
-                },
-            },
-        },
-    })
-
-    return jobInterviews.filter(
-        (interview) => interview.jobInfo.userId === userId
     )
 }

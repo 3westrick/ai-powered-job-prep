@@ -4,10 +4,10 @@ import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
 import { getJobInfo } from "../jobInfos/actions"
 import { insertInterview, updateInterview as updateInterviewDB } from "./db"
 import { InterviewInsert } from "./lib/types"
-import { getInterviewIdTag } from "./dbCache"
+import { getInterviewIdTag, getInterviewJobInfoTag } from "./dbCache"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import db from "@/drizzle/db"
-import { and, eq } from "drizzle-orm"
+import { and, desc, eq, isNotNull } from "drizzle-orm"
 import { interviews } from "@/drizzle/schema"
 import { getJobInfoIdTag } from "../jobInfos/dbCache"
 
@@ -69,7 +69,7 @@ export async function updateInterview(
     return await updateInterviewDB(id, data)
 }
 
-async function getInterview(id: string, userId: string) {
+export async function getInterview(id: string, userId: string) {
     "use cache"
     cacheTag(getInterviewIdTag(id))
     const interview = await db.query.interviews.findFirst({
@@ -87,4 +87,29 @@ async function getInterview(id: string, userId: string) {
     cacheTag(getJobInfoIdTag(interview.jobInfoId))
     if (interview.jobInfo.userId !== userId) return null
     return interview
+}
+
+export async function getInterviews(jobInfoId: string, userId: string) {
+    "use cache"
+    cacheTag(getInterviewJobInfoTag(jobInfoId))
+    cacheTag(getJobInfoIdTag(jobInfoId))
+
+    const jobInterviews = await db.query.interviews.findMany({
+        where: and(
+            eq(interviews.jobInfoId, jobInfoId),
+            isNotNull(interviews.humeChatId)
+        ),
+        orderBy: [desc(interviews.createdAt)],
+        with: {
+            jobInfo: {
+                columns: {
+                    userId: true,
+                },
+            },
+        },
+    })
+
+    return jobInterviews.filter(
+        (interview) => interview.jobInfo.userId === userId
+    )
 }
