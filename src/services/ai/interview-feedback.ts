@@ -35,6 +35,8 @@ export async function generateAiInterviewFeedback({
     console.log("Calling model")
     const { text } = await generateText({
         model: lmstudio("google/gemma-3-4b"),
+        // model: lmstudio("qwen/qwen3-4b-2507"),
+        // model: lmstudio("llama-3.2-3b-instruct"),
         prompt: JSON.stringify(formatedMessages),
         system: `You are an expert interview coach and evaluator. Your role is to analyze a mock job interview transcript and provide clear, detailed, and structured feedback on the interviewee's performance based on the job requirements. Your output should be in markdown format.
   
