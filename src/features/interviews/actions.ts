@@ -11,7 +11,21 @@ import { and, desc, eq, isNotNull } from "drizzle-orm"
 import { interviews } from "@/drizzle/schema"
 import { getJobInfoIdTag } from "../jobInfos/dbCache"
 import { canCreateInterview } from "./permissions"
-import { PLAN_LIMIT } from "@/lib/errorToast"
+import { PLAN_LIMIT, RATE_LIMIT } from "@/lib/errorToast"
+import arcjet, { request, tokenBucket } from "@arcjet/next"
+
+const aj = arcjet({
+    characteristics: ["userId"],
+    key: process.env.ARCJET_KEY!,
+    rules: [
+        tokenBucket({
+            capacity: 12,
+            refillRate: 4,
+            interval: "1d",
+            mode: "LIVE",
+        }),
+    ],
+})
 
 export async function createInterview(
     jobInfoId: string
@@ -32,6 +46,17 @@ export async function createInterview(
         }
     }
     // rate limit
+    const decision = await aj.protect(await request(), {
+        userId,
+        requested: 1,
+    })
+
+    if (decision.isDenied()) {
+        return {
+            error: true,
+            message: RATE_LIMIT,
+        }
+    }
 
     // job info
     const jobInfo = await getJobInfo(jobInfoId, userId)
