@@ -82,7 +82,7 @@ export default async function InterviewPage({
                                     <DialogTrigger asChild>
                                         <Button>View Feedback</Button>
                                     </DialogTrigger>
-                                    <DialogContent className="md:max-w-3xl lg:max-2-4xl max-h-[calc(100% - 2rem)] overflow-y-auto flex flex-col">
+                                    <DialogContent className="md:max-w-3xl lg:max-w-4xl max-h-[calc(100%-4rem)] overflow-x-clip overflow-y-auto flex flex-col">
                                         <DialogTitle>Feedback</DialogTitle>
                                         <MarkdownRenderer>
                                             {i.feedback}

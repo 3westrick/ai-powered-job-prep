@@ -2,6 +2,7 @@ import { JobInfo } from "@/features/jobInfos/lib/types"
 import { fetchChatMessages } from "../hume/lib/api"
 import { google } from "./models/google"
 import { generateText } from "ai"
+import { lmstudio } from "./models/lmstudio"
 
 export async function generateAiInterviewFeedback({
     humeChatId,
@@ -31,9 +32,9 @@ export async function generateAiInterviewFeedback({
                 message.role == "USER" ? message.emotionFeatures : undefined,
         }
     })
-
+    console.log("Calling model")
     const { text } = await generateText({
-        model: google("gemini-2.5-flash"),
+        model: lmstudio("google/gemma-3-4b"),
         prompt: JSON.stringify(formatedMessages),
         system: `You are an expert interview coach and evaluator. Your role is to analyze a mock job interview transcript and provide clear, detailed, and structured feedback on the interviewee's performance based on the job requirements. Your output should be in markdown format.
   
@@ -105,6 +106,7 @@ Additional Notes:
 - Include a number rating (out of 10) in the heading for each category (e.g., "Communication Clarity: 8/10") as well as an overall rating at the very start of the response.
 - Stop generating output as soon you have provided the full feedback.`,
     })
+    console.log("Text has been generated")
 
     return text
 }
