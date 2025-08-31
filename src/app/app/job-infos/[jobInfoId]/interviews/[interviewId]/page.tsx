@@ -2,6 +2,7 @@ import BackLink from "@/components/back-link"
 import MarkdownRenderer from "@/components/markdown-renderer"
 import { Skeleton, SkeletonButton } from "@/components/skleton"
 import SuspendedItem from "@/components/suspended-item"
+import { ActionButton } from "@/components/ui/action-button"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -9,7 +10,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { getInterview } from "@/features/interviews/actions"
+import {
+    generateInterviewFeedback,
+    getInterview,
+} from "@/features/interviews/actions"
 import formatDateTime from "@/lib/formatDateTime"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
 import CondensedMessages from "@/services/hume/components/condensed-messages"
@@ -64,7 +68,16 @@ export default async function InterviewPage({
                         item={interview}
                         fallback={<SkeletonButton className="w-32" />}
                         result={(i) =>
-                            i.feedback == null || i.feedback == "" ? null : (
+                            i.feedback == null || i.feedback == "" ? (
+                                <ActionButton
+                                    action={generateInterviewFeedback.bind(
+                                        null,
+                                        i.id
+                                    )}
+                                >
+                                    Generate Feedback
+                                </ActionButton>
+                            ) : (
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <Button>View Feedback</Button>

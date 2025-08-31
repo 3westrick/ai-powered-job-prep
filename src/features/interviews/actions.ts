@@ -13,6 +13,7 @@ import { getJobInfoIdTag } from "../jobInfos/dbCache"
 import { canCreateInterview } from "./permissions"
 import { PLAN_LIMIT, RATE_LIMIT } from "@/lib/errorToast"
 import arcjet, { request, tokenBucket } from "@arcjet/next"
+import { generateAiInterviewFeedback } from "@/services/ai/interview-feedback"
 
 const aj = arcjet({
     characteristics: ["userId"],
@@ -70,8 +71,6 @@ export async function createInterview(
     const interview = await insertInterview({
         jobInfoId,
         duration: "00:00:00",
-        humeChatId: "",
-        feedback: "",
     })
 
     return { error: false, id: interview.id }
@@ -111,6 +110,9 @@ export async function getInterview(id: string, userId: string) {
                 columns: {
                     id: true,
                     userId: true,
+                    title: true,
+                    experienceLevel: true,
+                    description: true,
                 },
             },
         },
@@ -144,4 +146,42 @@ export async function getInterviews(jobInfoId: string, userId: string) {
     return jobInterviews.filter(
         (interview) => interview.jobInfo.userId === userId
     )
+}
+
+export async function generateInterviewFeedback(interviewId: string) {
+    const { userId, user } = await getCurrentUser({ allData: true })
+    if (userId == null || user == null) {
+        return {
+            error: true,
+            message: "You don't have permission to do this",
+        }
+    }
+    const interview = await getInterview(interviewId, userId)
+    if (interview == null) {
+        return {
+            error: true,
+            message: "You don't have permission to do this",
+        }
+    }
+    if (interview.humeChatId == null) {
+        return {
+            error: true,
+            message: "Interview has not been completed yet",
+        }
+    }
+    const feedback = await generateAiInterviewFeedback({
+        humeChatId: interview.humeChatId,
+        jobInfo: interview.jobInfo,
+        userName: user.name,
+    })
+    if (feedback == null) {
+        return {
+            error: true,
+            message: "Failed to generate feedback",
+        }
+    }
+    await updateInterviewDB(interviewId, { feedback })
+    return {
+        error: false,
+    }
 }
