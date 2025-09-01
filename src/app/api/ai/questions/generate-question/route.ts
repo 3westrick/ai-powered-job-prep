@@ -1,14 +1,15 @@
 import db from "@/drizzle/db"
 import { questionDifficulties, questions } from "@/drizzle/schema"
 import { getJobInfo } from "@/features/jobInfos/actions"
+import { insertQuestion } from "@/features/questions/db"
 import { getQuestionsJobInfoTag } from "@/features/questions/dbCache"
 import { canCreateQuestion } from "@/features/questions/permissions"
 import { PLAN_LIMIT } from "@/lib/errorToast"
 import { generateAiQuestion } from "@/services/ai/questions"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
+import { createDataStreamResponse } from "ai"
 import { and, asc, eq } from "drizzle-orm"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
-import { NextResponse } from "next/server"
 import z from "zod"
 
 export const maxDuration = 180
@@ -44,16 +45,25 @@ export async function POST(req: Request) {
 
     const previousQuestions = await getQuestions(jobInfoId, userId)
 
-    const res = generateAiQuestion({
-        previousQuestions,
-        jobInfo,
-        difficulty,
-        onFinish: async (question) => {
-            console.log(question)
+    return createDataStreamResponse({
+        execute: async (dataStream) => {
+            const res = generateAiQuestion({
+                previousQuestions,
+                jobInfo,
+                difficulty,
+                onFinish: async (question) => {
+                    const { id } = await insertQuestion({
+                        text: question,
+                        jobInfoId,
+                        difficulty,
+                    })
+
+                    dataStream.writeData({ questionId: id })
+                },
+            })
+            res.mergeIntoDataStream(dataStream, { sendUsage: false })
         },
     })
-    // StreamTextResult<ToolSet, never>
-    return res.toUIMessageStreamResponse()
 }
 
 async function getQuestions(jobInfoId: string, userId: string) {

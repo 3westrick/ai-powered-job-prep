@@ -1,6 +1,6 @@
 import { JobInfo } from "@/features/jobInfos/lib/types"
 import { fetchChatMessages } from "../hume/lib/api"
-import { CoreMessage, generateText, ModelMessage, streamText } from "ai"
+import { CoreMessage, streamText } from "ai"
 import { lmstudio } from "./models/lmstudio"
 import { QuestionDifficulty } from "@/drizzle/schema"
 import { Question } from "@/features/questions/lib/types"
@@ -21,7 +21,7 @@ export function generateAiQuestion({
             [
                 { role: "user", content: q.difficulty },
                 { role: "assistant", content: q.text },
-            ] satisfies ModelMessage[]
+            ] satisfies CoreMessage[]
     )
 
     console.log("Calling model")

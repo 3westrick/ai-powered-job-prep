@@ -33,6 +33,7 @@ export default function QuestionsClientPage({
         completion: question,
         setCompletion: setQuestion,
         isLoading: isGeneratingQuestion,
+        data,
     } = useCompletion({
         api: "/api/ai/questions/generate-question",
         onFinish: () => {
@@ -150,7 +151,7 @@ function QuestionContainer({
                             ) : (
                                 question && (
                                     <MarkdownRenderer className="p-6">
-                                        {question.trim()}
+                                        {question}
                                     </MarkdownRenderer>
                                 )
                             )}
