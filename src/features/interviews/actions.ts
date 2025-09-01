@@ -13,7 +13,7 @@ import { getJobInfoIdTag } from "../jobInfos/dbCache"
 import { canCreateInterview } from "./permissions"
 import { PLAN_LIMIT, RATE_LIMIT } from "@/lib/errorToast"
 import arcjet, { request, tokenBucket } from "@arcjet/next"
-import { generateAiInterviewFeedback } from "@/services/ai/interview-feedback"
+import { generateAiInterviewFeedback } from "@/services/ai/interviews"
 
 const aj = arcjet({
     characteristics: ["userId"],

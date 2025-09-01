@@ -142,7 +142,7 @@ function QuestionContainer({
                 <ResizablePanelGroup direction="vertical" className="flex-grow">
                     <ResizablePanel id="question" defaultSize={25} minSize={5}>
                         <ScrollArea className="h-full min-w-48 *:h-full">
-                            {status == "init" ? (
+                            {status == "init" && question == null ? (
                                 <p className="text-lg center h-full">
                                     Get started by selecting a question
                                     difficulty above.
@@ -150,7 +150,7 @@ function QuestionContainer({
                             ) : (
                                 question && (
                                     <MarkdownRenderer className="p-6">
-                                        {question}
+                                        {question.trim()}
                                     </MarkdownRenderer>
                                 )
                             )}
