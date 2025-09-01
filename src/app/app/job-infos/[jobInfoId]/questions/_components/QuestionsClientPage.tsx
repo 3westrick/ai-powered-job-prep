@@ -1,6 +1,8 @@
+"use client"
 import BackLink from "@/components/back-link"
 import MarkdownRenderer from "@/components/markdown-renderer"
 import { Button } from "@/components/ui/button"
+import { LoadingSwap } from "@/components/ui/loading-swap"
 import {
     ResizableHandle,
     ResizablePanel,
@@ -8,8 +10,12 @@ import {
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { questionDifficulties, QuestionDifficulty } from "@/drizzle/schema"
 import { JobInfo } from "@/features/jobInfos/lib/types"
+import { formatQuestionDifficulty } from "@/features/questions/formatters"
 import { useState } from "react"
+import { useCompletion } from "@ai-sdk/react"
+import errorToast from "@/lib/errorToast"
 
 type Status = "awaiting-answer" | "awaiting-difficulty" | "init"
 
@@ -20,8 +26,37 @@ export default function QuestionsClientPage({
 }) {
     const [status, setStatus] = useState<Status>("init")
     const [answer, setAnswer] = useState<string | null>(null)
-    const question = null
-    const feedback = null
+    const questionId = null
+
+    const {
+        complete: generateQuestion,
+        completion: question,
+        setCompletion: setQuestion,
+        isLoading: isGeneratingQuestion,
+    } = useCompletion({
+        api: "/api/ai/questions/generate-question",
+        onFinish: () => {
+            setStatus("awaiting-answer")
+        },
+        onError: (error) => {
+            errorToast(error.message)
+        },
+    })
+
+    const {
+        complete: generateFeedback,
+        completion: feedback,
+        setCompletion: setFeedback,
+        isLoading: isGeneratingFeedback,
+    } = useCompletion({
+        api: "/api/ai/questions/generate-feedback",
+        onFinish: () => {
+            setStatus("awaiting-difficulty")
+        },
+        onError: (error) => {
+            errorToast(error.message)
+        },
+    })
 
     return (
         <div className="flex flex-col items-center gap-4 w-full max-w-[2000px] mx-auto flex-grow h-screen-header">
@@ -31,7 +66,43 @@ export default function QuestionsClientPage({
                         {jobInfo.name}
                     </BackLink>
                 </div>
-                <Controls />
+                <Controls
+                    status={status}
+                    reset={() => {
+                        setStatus("init")
+                        setQuestion("")
+                        setFeedback("")
+                        setAnswer(null)
+                    }}
+                    isLoading={isGeneratingQuestion || isGeneratingFeedback}
+                    generateQuestion={(dif) => {
+                        setQuestion("")
+                        setFeedback("")
+                        setAnswer(null)
+                        generateQuestion(dif, {
+                            body: {
+                                jobInfoId: jobInfo.id,
+                            },
+                        })
+                    }}
+                    generateFeedback={() => {
+                        if (
+                            answer == null ||
+                            answer.trim() == "" ||
+                            questionId == null
+                        )
+                            return
+                        // TODO: get question id
+                        generateFeedback(answer?.trim(), {
+                            body: { questionId: null },
+                        })
+                    }}
+                    disableAnswerButton={
+                        answer == null ||
+                        answer.trim() == "" ||
+                        questionId == null
+                    }
+                />
                 <div className="flex-grow hidden md:block" />
             </div>
             <QuestionContainer
@@ -118,11 +189,57 @@ function QuestionContainer({
     )
 }
 
-function Controls() {
+function Controls({
+    status,
+    isLoading,
+    generateQuestion,
+    generateFeedback,
+    reset,
+    disableAnswerButton,
+}: {
+    status: Status
+    isLoading: boolean
+    generateQuestion: (difficulty: QuestionDifficulty) => void
+    generateFeedback: () => void
+    reset: () => void
+    disableAnswerButton: boolean
+}) {
     return (
-        <div className="flex items-center gap-2">
-            <Button variant={"default"}>Create Question</Button>
-            <Button variant={"secondary"}>Cancel</Button>
+        <div className="flex gap-2">
+            {status == "awaiting-answer" ? (
+                <>
+                    <Button
+                        disabled={isLoading}
+                        onClick={reset}
+                        variant={"outline"}
+                        size={"sm"}
+                    >
+                        <LoadingSwap isLoading={isLoading}>Skip</LoadingSwap>
+                    </Button>
+                    <Button
+                        disabled={disableAnswerButton}
+                        onClick={generateFeedback}
+                        size={"sm"}
+                    >
+                        <LoadingSwap isLoading={isLoading}>Answer</LoadingSwap>
+                    </Button>
+                </>
+            ) : (
+                questionDifficulties.map((difficulty) => (
+                    <Button
+                        key={difficulty}
+                        size={"sm"}
+                        disabled={isLoading}
+                        onClick={() => {
+                            generateQuestion(difficulty)
+                        }}
+                    >
+                        <LoadingSwap isLoading={isLoading}>
+                            {formatQuestionDifficulty(difficulty)}
+                        </LoadingSwap>
+                    </Button>
+                ))
+            )}
         </div>
     )
 }
