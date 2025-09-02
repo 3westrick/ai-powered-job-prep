@@ -2,7 +2,7 @@ import db from "@/drizzle/db"
 import { questionDifficulties, questions } from "@/drizzle/schema"
 import { getJobInfo } from "@/features/jobInfos/actions"
 import { insertQuestion } from "@/features/questions/db"
-import { getQuestionsJobInfoTag } from "@/features/questions/dbCache"
+import { getQuestionJobInfoTag } from "@/features/questions/dbCache"
 import { canCreateQuestion } from "@/features/questions/permissions"
 import { PLAN_LIMIT } from "@/lib/errorToast"
 import { generateAiQuestion } from "@/services/ai/questions"
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
 async function getQuestions(jobInfoId: string, userId: string) {
     "use cache"
-    cacheTag(getQuestionsJobInfoTag(jobInfoId))
+    cacheTag(getQuestionJobInfoTag(jobInfoId))
     return await db.query.questions.findMany({
         where: eq(questions.jobInfoId, jobInfoId),
         orderBy: asc(questions.createdAt),

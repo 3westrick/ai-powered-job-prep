@@ -66,10 +66,6 @@ export default function QuestionsClientPage({
         if (!parsed.success) return null
         return parsed.data.questionId
     }, [data])
-    useEffect(() => {
-        if (questionId == null) return
-        console.log(questionId)
-    }, [questionId])
 
     return (
         <div className="flex flex-col items-center gap-4 w-full max-w-[2000px] mx-auto flex-grow h-screen-header">
@@ -107,7 +103,7 @@ export default function QuestionsClientPage({
                             return
                         // TODO: get question id
                         generateFeedback(answer?.trim(), {
-                            body: { questionId: null },
+                            body: { questionId },
                         })
                     }}
                     disableAnswerButton={
@@ -191,6 +187,7 @@ function QuestionContainer({
             <ResizablePanel id="answer-" defaultSize={50} minSize={5}>
                 <ScrollArea className="h-full min-w-48 *:h-full">
                     <Textarea
+                        disabled={status !== "awaiting-answer"}
                         onChange={(e) => setAnswer(e.target.value)}
                         value={answer ?? ""}
                         placeholder="Type your answer here..."
