@@ -13,9 +13,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { questionDifficulties, QuestionDifficulty } from "@/drizzle/schema"
 import { JobInfo } from "@/features/jobInfos/lib/types"
 import { formatQuestionDifficulty } from "@/features/questions/formatters"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useCompletion } from "@ai-sdk/react"
 import errorToast from "@/lib/errorToast"
+import z from "zod"
 
 type Status = "awaiting-answer" | "awaiting-difficulty" | "init"
 
@@ -26,7 +27,6 @@ export default function QuestionsClientPage({
 }) {
     const [status, setStatus] = useState<Status>("init")
     const [answer, setAnswer] = useState<string | null>(null)
-    const questionId = null
 
     const {
         complete: generateQuestion,
@@ -58,6 +58,18 @@ export default function QuestionsClientPage({
             errorToast(error.message)
         },
     })
+
+    const questionId = useMemo(() => {
+        const item = data?.at(-1)
+        if (item == null) return null
+        const parsed = z.object({ questionId: z.string() }).safeParse(item)
+        if (!parsed.success) return null
+        return parsed.data.questionId
+    }, [data])
+    useEffect(() => {
+        if (questionId == null) return
+        console.log(questionId)
+    }, [questionId])
 
     return (
         <div className="flex flex-col items-center gap-4 w-full max-w-[2000px] mx-auto flex-grow h-screen-header">
