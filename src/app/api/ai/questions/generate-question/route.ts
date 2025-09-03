@@ -45,33 +45,29 @@ export async function POST(req: Request) {
 
     const previousQuestions = await getQuestions(jobInfoId, userId)
 
-    try {
-        return createDataStreamResponse({
-            execute: async (dataStream) => {
-                console.log("before generating question")
-                const res = generateAiQuestion({
-                    previousQuestions,
-                    jobInfo,
-                    difficulty,
-                    onFinish: async (question) => {
-                        console.log("after generating question")
-                        const { id } = await insertQuestion({
-                            text: question,
-                            jobInfoId,
-                            difficulty,
-                        })
+    return createDataStreamResponse({
+        execute: async (dataStream) => {
+            console.log("before generating question")
+            const res = generateAiQuestion({
+                previousQuestions,
+                jobInfo,
+                difficulty,
+                onFinish: async (question) => {
+                    console.log("after generating question")
+                    const { id } = await insertQuestion({
+                        text: question,
+                        jobInfoId,
+                        difficulty,
+                    })
 
-                        dataStream.writeData({ questionId: id })
-                    },
-                })
-                console.log("before merging into data stream")
-                return res.mergeIntoDataStream(dataStream, { sendUsage: false })
-            },
-        })
-    } catch (error) {
-        console.log("🚀 ~ POST ~ error:", error)
-        return new Response("Error generating question", { status: 500 })
-    }
+                    dataStream.writeData({ questionId: id })
+                },
+            })
+            console.log("before merging into data stream")
+            res.mergeIntoDataStream(dataStream)
+            console.log("after merging into data stream")
+        },
+    })
 }
 
 async function getQuestions(jobInfoId: string, userId: string) {
