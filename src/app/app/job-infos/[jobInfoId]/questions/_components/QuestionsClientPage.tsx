@@ -37,7 +37,8 @@ export default function QuestionsClientPage({
         data,
     } = useCompletion({
         api: "/api/ai/questions/generate-question",
-        onFinish: async () => {
+        onFinish: async (text) => {
+            console.log("🚀 ~ QuestionsClientPage ~ text:", text)
             const res = await lastQuestionByJobInfoId(jobInfo.id)
             if (res.error) {
                 errorToast(res.message)

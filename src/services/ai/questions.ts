@@ -25,12 +25,14 @@ export function generateAiQuestion({
             ] satisfies CoreMessage[]
     )
 
-    console.log("generateAiQuestion", "Calling model")
+    const model =
+        env.WORK_SPACE == "local"
+            ? lmstudio("qwen/qwen3-4b-2507")
+            : google("gemini-2.5-flash")
+
+    console.log("🚀 ~ generateAiQuestion ~ model:", model)
     return streamText({
-        model:
-            env.WORK_SPACE == "local"
-                ? lmstudio("qwen/qwen3-4b-2507")
-                : google("gemini-2.5-flash"),
+        model: model,
         onFinish: ({ text }) => onFinish(text),
         messages: [...previousMessages, { role: "user", content: difficulty }],
         system: `You are an AI assistant that creates technical interview questions tailored to a specific job role. Your task is to generate one **realistic and relevant** technical question that matches the skill requirements of the job and aligns with the difficulty level provided by the user.
