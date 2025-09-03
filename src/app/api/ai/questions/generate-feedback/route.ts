@@ -1,6 +1,7 @@
 import db from "@/drizzle/db"
 import { questions } from "@/drizzle/schema"
 import { getJobInfoIdTag } from "@/features/jobInfos/dbCache"
+import { getQuestion } from "@/features/questions/actions"
 import { getQuestionIdTag } from "@/features/questions/dbCache"
 import { generateAiQuestionFeedback } from "@/services/ai/questions"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
@@ -40,25 +41,4 @@ export async function POST(req: Request) {
     return res.toDataStreamResponse({
         sendUsage: false,
     })
-}
-
-async function getQuestion(questionId: string, userId: string) {
-    "use cache"
-    cacheTag(getQuestionIdTag(questionId))
-    const question = await db.query.questions.findFirst({
-        where: eq(questions.id, questionId),
-        with: {
-            jobInfo: {
-                columns: {
-                    id: true,
-                    userId: true,
-                },
-            },
-        },
-    })
-    if (question == null) return null
-    cacheTag(getJobInfoIdTag(question.jobInfoId))
-
-    if (question.jobInfo.userId !== userId) return null
-    return question
 }

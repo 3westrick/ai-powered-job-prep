@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useCompletion } from "@ai-sdk/react"
 import errorToast from "@/lib/errorToast"
 import z from "zod"
+import { lastQuestionByJobInfoId } from "@/features/questions/actions"
 
 type Status = "awaiting-answer" | "awaiting-difficulty" | "init"
 
@@ -36,8 +37,15 @@ export default function QuestionsClientPage({
         data,
     } = useCompletion({
         api: "/api/ai/questions/generate-question",
-        onFinish: () => {
-            setStatus("awaiting-answer")
+        onFinish: async () => {
+            const res = await lastQuestionByJobInfoId(jobInfo.id)
+            if (res.error) {
+                errorToast(res.message)
+                setStatus("init")
+            } else {
+                // setQuestion(res.question.text)
+                setStatus("awaiting-answer")
+            }
         },
         onError: (error) => {
             console.log("🚀 ~ QuestionsClientPage ~ error:", error)

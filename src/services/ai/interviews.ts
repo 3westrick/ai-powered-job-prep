@@ -3,6 +3,7 @@ import { fetchChatMessages } from "../hume/lib/api"
 import { google } from "./models/google"
 import { generateText } from "ai"
 import { lmstudio } from "./models/lmstudio"
+import { env } from "@/data/env/server"
 
 export async function generateAiInterviewFeedback({
     humeChatId,
@@ -37,7 +38,10 @@ export async function generateAiInterviewFeedback({
         // model: lmstudio("google/gemma-3-4b"),
         // model: lmstudio("qwen/qwen3-4b-2507"),
         // model: lmstudio("llama-3.2-3b-instruct"),
-        model: google("gemini-2.5-flash"),
+        model:
+            env.WORK_SPACE == "local"
+                ? lmstudio("google/gemma-3-4b")
+                : google("gemini-2.5-flash"),
         prompt: JSON.stringify(formatedMessages),
         system: `You are an expert interview coach and evaluator. Your role is to analyze a mock job interview transcript and provide clear, detailed, and structured feedback on the interviewee's performance based on the job requirements. Your output should be in markdown format.
   

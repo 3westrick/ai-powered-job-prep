@@ -3,6 +3,7 @@ import { streamObject } from "ai"
 import { aiAnalyzeSchema } from "./schemas"
 import { lmstudio } from "../models/lmstudio"
 import { google } from "../models/google"
+import { env } from "@/data/env/server"
 
 export async function analyzeResumeForJob({
     resumeFile,
@@ -15,7 +16,10 @@ export async function analyzeResumeForJob({
         // model: lmstudio("google/gemma-3-4b"),
         // model: lmstudio("qwen/qwen3-4b-2507"),
         // model: lmstudio("llama-3.2-3b-instruct"),
-        model: google("gemini-2.5-flash"),
+        model:
+            env.WORK_SPACE == "local"
+                ? lmstudio("google/gemma-3-4b")
+                : google("gemini-2.5-flash"),
         schema: aiAnalyzeSchema,
         messages: [
             {
