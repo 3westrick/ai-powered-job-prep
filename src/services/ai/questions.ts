@@ -30,7 +30,6 @@ export function generateAiQuestion({
             ? lmstudio("qwen/qwen3-4b-2507")
             : google("gemini-2.5-flash")
 
-    console.log("🚀 ~ generateAiQuestion ~ model:", model)
     return streamText({
         model: model,
         onFinish: ({ text }) => onFinish(text),

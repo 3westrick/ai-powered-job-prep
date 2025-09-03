@@ -37,14 +37,12 @@ export default function QuestionsClientPage({
         data,
     } = useCompletion({
         api: "/api/ai/questions/generate-question",
-        onFinish: async (text) => {
-            console.log("🚀 ~ QuestionsClientPage ~ text:", text)
+        onFinish: async () => {
             const res = await lastQuestionByJobInfoId(jobInfo.id)
             if (res.error) {
                 errorToast(res.message)
                 setStatus("init")
             } else {
-                // setQuestion(res.question.text)
                 setStatus("awaiting-answer")
             }
         },
