@@ -28,27 +28,29 @@ export default function QuestionsClientPage({
 }) {
     const [status, setStatus] = useState<Status>("init")
     const [answer, setAnswer] = useState<string | null>(null)
-
+    const [questionId, setQuestionId] = useState<string | null>(null)
     const {
         complete: generateQuestion,
         completion: question,
         setCompletion: setQuestion,
         isLoading: isGeneratingQuestion,
-        data,
     } = useCompletion({
         api: "/api/ai/questions/generate-question",
         onFinish: async () => {
             const res = await lastQuestionByJobInfoId(jobInfo.id)
             if (res.error) {
                 errorToast(res.message)
+                setQuestionId(null)
                 setStatus("init")
             } else {
+                setQuestionId(res.question.id)
                 setStatus("awaiting-answer")
             }
         },
         onError: (error) => {
             console.log("🚀 ~ QuestionsClientPage ~ error:", error)
             errorToast(error.message)
+            setQuestionId(null)
         },
     })
 
@@ -67,14 +69,6 @@ export default function QuestionsClientPage({
         },
     })
 
-    const questionId = useMemo(() => {
-        const item = data?.at(-1)
-        if (item == null) return null
-        const parsed = z.object({ questionId: z.string() }).safeParse(item)
-        if (!parsed.success) return null
-        return parsed.data.questionId
-    }, [data])
-
     return (
         <div className="flex flex-col items-center gap-4 w-full max-w-[2000px] mx-auto flex-grow h-screen-header">
             <div className="container flex gap-4 mt-4 items-center justify-between">
@@ -90,6 +84,7 @@ export default function QuestionsClientPage({
                         setQuestion("")
                         setFeedback("")
                         setAnswer(null)
+                        setQuestionId(null)
                     }}
                     isLoading={isGeneratingQuestion || isGeneratingFeedback}
                     generateQuestion={(dif) => {
