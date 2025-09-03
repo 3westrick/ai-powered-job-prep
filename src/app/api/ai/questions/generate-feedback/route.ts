@@ -8,8 +8,6 @@ import { eq } from "drizzle-orm"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import z from "zod"
 
-export const maxDuration = 180
-
 const schema = z.object({
     prompt: z.string().min(1),
     questionId: z.string().min(1),
