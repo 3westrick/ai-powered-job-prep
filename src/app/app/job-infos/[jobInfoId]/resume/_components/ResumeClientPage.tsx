@@ -27,7 +27,17 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
     } = useObject({
         api: "/api/ai/resumes/analyze",
         schema: aiAnalyzeSchema,
+        onFinish({ object, error }) {
+            // typed object, undefined if schema validation fails:
+            console.log("Object generation completed:", object)
 
+            // error, undefined if schema validation succeeds:
+            console.log("Schema validation error:", error)
+        },
+        onError(error) {
+            // error during fetch request:
+            console.error("An error occurred:", error)
+        },
         fetch: (url, options) => {
             const headers = new Headers(options?.headers)
             headers.delete("Content-Type")
@@ -40,10 +50,6 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
             return fetch(url, { ...options, headers, body: formData })
         },
     })
-
-    useEffect(() => {
-        console.log(aiAnalysis)
-    }, [aiAnalysis])
 
     function handleFileUpload(file: File | null) {
         fileRef.current = file
@@ -66,7 +72,7 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
 
         generateAnalysis(null)
     }
-    console.log("error", error)
+
     return (
         <div className="space-y-8 w-full">
             <Card>

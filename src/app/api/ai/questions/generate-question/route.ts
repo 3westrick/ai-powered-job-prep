@@ -48,11 +48,13 @@ export async function POST(req: Request) {
     try {
         return createDataStreamResponse({
             execute: async (dataStream) => {
+                console.log("before generating question")
                 const res = generateAiQuestion({
                     previousQuestions,
                     jobInfo,
                     difficulty,
                     onFinish: async (question) => {
+                        console.log("after generating question")
                         const { id } = await insertQuestion({
                             text: question,
                             jobInfoId,
@@ -62,6 +64,7 @@ export async function POST(req: Request) {
                         dataStream.writeData({ questionId: id })
                     },
                 })
+                console.log("before merging into data stream")
                 res.mergeIntoDataStream(dataStream, { sendUsage: false })
             },
         })
