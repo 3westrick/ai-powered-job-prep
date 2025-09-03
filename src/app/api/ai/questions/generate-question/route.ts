@@ -65,7 +65,7 @@ export async function POST(req: Request) {
                     },
                 })
                 console.log("before merging into data stream")
-                res.mergeIntoDataStream(dataStream, { sendUsage: false })
+                return res.mergeIntoDataStream(dataStream, { sendUsage: false })
             },
         })
     } catch (error) {
