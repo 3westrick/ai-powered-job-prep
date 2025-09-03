@@ -40,6 +40,7 @@ export default function QuestionsClientPage({
             setStatus("awaiting-answer")
         },
         onError: (error) => {
+            console.log("🚀 ~ QuestionsClientPage ~ error:", error)
             errorToast(error.message)
         },
     })
@@ -101,7 +102,6 @@ export default function QuestionsClientPage({
                             questionId == null
                         )
                             return
-                        // TODO: get question id
                         generateFeedback(answer?.trim(), {
                             body: { questionId },
                         })

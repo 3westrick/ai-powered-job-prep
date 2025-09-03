@@ -8,7 +8,7 @@ import { PLAN_LIMIT } from "@/lib/errorToast"
 import { generateAiQuestion } from "@/services/ai/questions"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
 import { createDataStreamResponse } from "ai"
-import { and, asc, eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import z from "zod"
 
@@ -45,25 +45,30 @@ export async function POST(req: Request) {
 
     const previousQuestions = await getQuestions(jobInfoId, userId)
 
-    return createDataStreamResponse({
-        execute: async (dataStream) => {
-            const res = generateAiQuestion({
-                previousQuestions,
-                jobInfo,
-                difficulty,
-                onFinish: async (question) => {
-                    const { id } = await insertQuestion({
-                        text: question,
-                        jobInfoId,
-                        difficulty,
-                    })
+    try {
+        return createDataStreamResponse({
+            execute: async (dataStream) => {
+                const res = generateAiQuestion({
+                    previousQuestions,
+                    jobInfo,
+                    difficulty,
+                    onFinish: async (question) => {
+                        const { id } = await insertQuestion({
+                            text: question,
+                            jobInfoId,
+                            difficulty,
+                        })
 
-                    dataStream.writeData({ questionId: id })
-                },
-            })
-            res.mergeIntoDataStream(dataStream, { sendUsage: false })
-        },
-    })
+                        dataStream.writeData({ questionId: id })
+                    },
+                })
+                res.mergeIntoDataStream(dataStream, { sendUsage: false })
+            },
+        })
+    } catch (error) {
+        console.log("🚀 ~ POST ~ error:", error)
+        return new Response("Error generating question", { status: 500 })
+    }
 }
 
 async function getQuestions(jobInfoId: string, userId: string) {
