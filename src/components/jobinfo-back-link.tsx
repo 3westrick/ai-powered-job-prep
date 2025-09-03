@@ -19,7 +19,7 @@ export default function JobInfoBackLink({
             <SuspendedItem
                 item={jobInfoPromise}
                 fallback={"Job Description"}
-                result={(j) => j.title || "Job Description"}
+                result={(j) => j.jobInfo.title || "Job Description"}
             />
         </BackLink>
     )

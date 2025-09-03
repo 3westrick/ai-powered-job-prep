@@ -2,6 +2,7 @@ import { JobInfo } from "@/features/jobInfos/lib/types"
 import { streamObject } from "ai"
 import { aiAnalyzeSchema } from "./schemas"
 import { lmstudio } from "../models/lmstudio"
+import { google } from "../models/google"
 
 export async function analyzeResumeForJob({
     resumeFile,
@@ -11,7 +12,10 @@ export async function analyzeResumeForJob({
     jobInfo: Pick<JobInfo, "title" | "experienceLevel" | "description">
 }) {
     return streamObject({
-        model: lmstudio("google/gemma-3-4b"),
+        // model: lmstudio("google/gemma-3-4b"),
+        // model: lmstudio("qwen/qwen3-4b-2507"),
+        // model: lmstudio("llama-3.2-3b-instruct"),
+        model: google("gemini-2.5-flash"),
         schema: aiAnalyzeSchema,
         messages: [
             {

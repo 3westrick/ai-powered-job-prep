@@ -1,5 +1,6 @@
 "use client"
 
+import { Alert } from "@/components/ui/alert"
 import {
     Card,
     CardContent,
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { aiAnalyzeSchema } from "@/services/ai/resume/schemas"
 import { experimental_useObject as useObject } from "@ai-sdk/react"
 import { UploadIcon } from "lucide-react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
@@ -22,20 +23,27 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
         object: aiAnalysis,
         isLoading,
         submit: generateAnalysis,
+        error,
     } = useObject({
         api: "/api/ai/resumes/analyze",
         schema: aiAnalyzeSchema,
+
         fetch: (url, options) => {
             const headers = new Headers(options?.headers)
             headers.delete("Content-Type")
             const formData = new FormData()
             if (fileRef.current != null) {
-                formData.append("file", fileRef.current)
+                console.log("File found")
+                formData.append("resumeFile", fileRef.current)
             }
             formData.append("jobInfoId", jobInfoId)
             return fetch(url, { ...options, headers, body: formData })
         },
     })
+
+    useEffect(() => {
+        console.log(aiAnalysis)
+    }, [aiAnalysis])
 
     function handleFileUpload(file: File | null) {
         fileRef.current = file
@@ -58,7 +66,7 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
 
         generateAnalysis(null)
     }
-
+    console.log("error", error)
     return (
         <div className="space-y-8 w-full">
             <Card>
@@ -136,6 +144,10 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
                     </LoadingSwap>
                 </CardContent>
             </Card>
+            {error && <Alert variant="destructive">{error.message}</Alert>}
+            <pre>
+                <code>{JSON.stringify(aiAnalysis, null, 2)}</code>
+            </pre>
         </div>
     )
 }

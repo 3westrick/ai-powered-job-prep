@@ -4,6 +4,7 @@ import { CoreMessage, streamText } from "ai"
 import { lmstudio } from "./models/lmstudio"
 import { QuestionDifficulty } from "@/drizzle/schema"
 import { Question } from "@/features/questions/lib/types"
+import { google } from "@ai-sdk/google"
 
 export function generateAiQuestion({
     previousQuestions,
@@ -27,7 +28,7 @@ export function generateAiQuestion({
     console.log("Calling model")
     return streamText({
         // model: lmstudio("google/gemma-3-4b"),
-        model: lmstudio("qwen/qwen3-4b-2507"),
+        model: google("gemini-2.5-flash"),
         onFinish: ({ text }) => onFinish(text),
         messages: [...previousMessages, { role: "user", content: difficulty }],
         system: `You are an AI assistant that creates technical interview questions tailored to a specific job role. Your task is to generate one **realistic and relevant** technical question that matches the skill requirements of the job and aligns with the difficulty level provided by the user.

@@ -10,6 +10,7 @@ export const env = createEnv({
         DB_USER: z.string().min(1),
         DB_PASSWORD: z.string().min(1),
         DB_NAME: z.string().min(1),
+        POSTGRES_URL: z.string().optional(),
         HUME_API_KEY: z.string().min(1),
         HUME_SECRET_KEY: z.string().min(1),
         GEMINI_API_KEY: z.string().min(1),
@@ -17,7 +18,9 @@ export const env = createEnv({
     createFinalSchema: (env) => {
         return z.object(env).transform((env) => ({
             ...env,
-            DATABASE_URL: `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`,
+            DATABASE_URL:
+                env.POSTGRES_URL ??
+                `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`,
         }))
     },
     emptyStringAsUndefined: true,

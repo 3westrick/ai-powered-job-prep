@@ -6,8 +6,9 @@ import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
 
 export async function POST(req: Request) {
     const { userId } = await getCurrentUser()
-    if (!userId) {
-        return new Response("Unauthorized", { status: 401 })
+
+    if (userId == null) {
+        return new Response("You are not logged in", { status: 401 })
     }
 
     const formData = await req.formData()
