@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 import JobInfoBackLink from "@/components/jobinfo-back-link"
 import ResumeClientPage from "./_components/ResumeClientPage"
-import { canRunResumeAiAnalysis } from "@/features/resume/permissions"
+import { canRunResumeAnalysis } from "@/features/resume/permissions"
 
 export default async function ResumePage({
     params,
@@ -30,7 +30,6 @@ export default async function ResumePage({
 }
 
 async function SuspendedComponent({ jobInfoId }: { jobInfoId: string }) {
-    if (!(await canRunResumeAiAnalysis())) return redirect("/app/upgrade")
-    await new Promise((resolve) => setTimeout(resolve, 10000))
+    if (!(await canRunResumeAnalysis())) return redirect("/app/upgrade")
     return <ResumeClientPage jobInfoId={jobInfoId} />
 }
