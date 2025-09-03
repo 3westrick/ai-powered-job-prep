@@ -1,5 +1,4 @@
 import { JobInfo } from "@/features/jobInfos/lib/types"
-import { fetchChatMessages } from "../hume/lib/api"
 import { CoreMessage, streamText } from "ai"
 import { lmstudio } from "./models/lmstudio"
 import { QuestionDifficulty } from "@/drizzle/schema"
@@ -26,12 +25,11 @@ export function generateAiQuestion({
             ] satisfies CoreMessage[]
     )
 
-    console.log("Calling model")
+    console.log("generateAiQuestion", "Calling model")
     return streamText({
-        // model: lmstudio("google/gemma-3-4b"),
         model:
             env.WORK_SPACE == "local"
-                ? lmstudio("google/gemma-3-4b")
+                ? lmstudio("qwen/qwen3-4b-2507")
                 : google("gemini-2.5-flash"),
         onFinish: ({ text }) => onFinish(text),
         messages: [...previousMessages, { role: "user", content: difficulty }],
@@ -63,7 +61,10 @@ export function generateAiQuestionFeedback({
 }) {
     console.log("Calling model")
     return streamText({
-        model: lmstudio("qwen/qwen3-4b-2507"),
+        model:
+            env.WORK_SPACE == "local"
+                ? lmstudio("qwen/qwen3-4b-2507")
+                : google("gemini-2.5-flash"),
         prompt: answer,
         system: `You are an expert technical interviewer. Your job is to evaluate the candidate's answer to a technical interview question.
 

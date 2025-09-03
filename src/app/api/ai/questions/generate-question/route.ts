@@ -54,7 +54,7 @@ export async function POST(req: Request) {
             })
         },
     })
-    return res.toDataStreamResponse()
+    return res.toTextStreamResponse()
 }
 
 async function getQuestions(jobInfoId: string, userId: string) {

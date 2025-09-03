@@ -18,7 +18,7 @@ export async function analyzeResumeForJob({
         // model: lmstudio("llama-3.2-3b-instruct"),
         model:
             env.WORK_SPACE == "local"
-                ? lmstudio("google/gemma-3-4b")
+                ? lmstudio("qwen/qwen3-4b-2507")
                 : google("gemini-2.5-flash"),
         schema: aiAnalyzeSchema,
         messages: [
