@@ -1,6 +1,5 @@
 import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/next"
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
-import { describe } from "node:test"
 
 const isPublicRoute = createRouteMatcher([
     "/sign-in(.*)",
@@ -32,10 +31,10 @@ const aj = arcjet({
 })
 
 export default clerkMiddleware(async (auth, req) => {
-    const decision = await aj.protect(req)
-    if (decision.isDenied()) {
-        return new Response(null, { status: 403 })
-    }
+    // const decision = await aj.protect(req)
+    // if (decision.isDenied()) {
+    //     return new Response(null, { status: 403 })
+    // }
     if (!isPublicRoute(req)) {
         await auth.protect()
     }
