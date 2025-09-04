@@ -13,8 +13,9 @@ import { cn } from "@/lib/utils"
 import { aiAnalyzeSchema } from "@/services/ai/resume/schemas"
 import { experimental_useObject as useObject } from "@ai-sdk/react"
 import { UploadIcon } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
+import AnalysisRestuls from "./AnalysisRestuls"
 
 export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
     const [isDraggingOver, setIsDraggingOver] = useState(false)
@@ -151,9 +152,7 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
                 </CardContent>
             </Card>
             {error && <Alert variant="destructive">{error.message}</Alert>}
-            <pre>
-                <code>{JSON.stringify(aiAnalysis, null, 2)}</code>
-            </pre>
+            <AnalysisRestuls aiAnalysis={aiAnalysis} isLoading={isLoading} />
         </div>
     )
 }
