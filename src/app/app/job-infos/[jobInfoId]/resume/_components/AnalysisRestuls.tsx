@@ -63,7 +63,43 @@ export default function AnalysisRestuls({
                                         score={category?.score}
                                     />
                                 </AccordionTrigger>
-                                <AccordionContent></AccordionContent>
+                                <AccordionContent>
+                                    <div className="space-y-4">
+                                        <div className="text-muted-foreground">
+                                            {category?.summary == null ? (
+                                                <span className="space-y-2">
+                                                    <Skeleton />
+                                                    <Skeleton className="w-3/4" />
+                                                </span>
+                                            ) : (
+                                                category.summary
+                                            )}
+                                        </div>
+                                        <div className="space-y-3">
+                                            {category?.feedback == null ? (
+                                                <>
+                                                    <Skeleton className="h-16" />
+                                                    <Skeleton className="h-16" />
+                                                    <Skeleton className="h-16" />
+                                                </>
+                                            ) : (
+                                                category.feedback.map(
+                                                    (item, index) => {
+                                                        if (item == null)
+                                                            return null
+
+                                                        return (
+                                                            <FeedbackItem
+                                                                key={index}
+                                                                {...item}
+                                                            />
+                                                        )
+                                                    }
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                </AccordionContent>
                             </AccordionItem>
                         )
                     })}
