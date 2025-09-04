@@ -75,7 +75,7 @@ export default function ResumeClientPage({ jobInfoId }: { jobInfoId: string }) {
     }
 
     return (
-        <div className="space-y-8 w-full">
+        <div className="space-y-8 w-full pb-8">
             <Card>
                 <CardHeader>
                     <CardTitle>
