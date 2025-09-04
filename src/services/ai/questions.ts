@@ -1,5 +1,5 @@
 import { JobInfo } from "@/features/jobInfos/lib/types"
-import { CoreMessage, streamText } from "ai"
+import { ModelMessage, streamText } from "ai"
 import { lmstudio } from "./models/lmstudio"
 import { QuestionDifficulty } from "@/drizzle/schema"
 import { Question } from "@/features/questions/lib/types"
@@ -22,7 +22,7 @@ export function generateAiQuestion({
             [
                 { role: "user", content: q.difficulty },
                 { role: "assistant", content: q.text },
-            ] satisfies CoreMessage[]
+            ] satisfies ModelMessage[]
     )
 
     const model =

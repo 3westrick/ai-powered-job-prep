@@ -7,7 +7,7 @@ import { canCreateQuestion } from "@/features/questions/permissions"
 import { PLAN_LIMIT } from "@/lib/errorToast"
 import { generateAiQuestion } from "@/services/ai/questions"
 import getCurrentUser from "@/services/clerk/lib/getCurrentUser"
-import { createDataStreamResponse } from "ai"
+
 import { asc, eq } from "drizzle-orm"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import z from "zod"
@@ -54,7 +54,8 @@ export async function POST(req: Request) {
             })
         },
     })
-    return res.toDataStreamResponse()
+    return res.toUIMessageStreamResponse()
+    // return res.toTextStreamResponse()
 }
 
 async function getQuestions(jobInfoId: string, userId: string) {

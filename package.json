@@ -13,10 +13,9 @@
         "db:studio": "drizzle-kit studio"
     },
     "dependencies": {
-        "@ai-sdk/openai-compatible": "^0.2.16",
-        "@ai-sdk/google": "^1.2.22",
-        "@ai-sdk/react": "^1.2.12",
-        "ai": "^4.3.19",
+        "@ai-sdk/google": "^2.0.11",
+        "@ai-sdk/openai-compatible": "^1.0.14",
+        "@ai-sdk/react": "^2.0.30",
         "@arcjet/inspect": "^1.0.0-beta.10",
         "@arcjet/next": "^1.0.0-beta.10",
         "@clerk/nextjs": "^6.31.4",
@@ -32,6 +31,7 @@
         "@radix-ui/react-slot": "^1.2.3",
         "@t3-oss/env-nextjs": "^0.13.8",
         "@tailwindcss/typography": "^0.5.16",
+        "ai": "^5.0.30",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "drizzle-orm": "^0.44.4",
